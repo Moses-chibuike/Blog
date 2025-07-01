@@ -1,0 +1,147 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import PostManager from '../../components/PostManager.astro';
+---
+
+<Layout title="Admin Dashboard - AlaoMe Blog" description="Create and manage blog posts">
+  <Header />
+  
+  <!-- Admin Header -->
+  <section class="bg-primary-600 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+            Blog <span class="text-accent-300">Administration</span>
+          </h1>
+          <p class="text-xl text-primary-100">
+            Create, edit, and manage your stories with full control
+          </p>
+        </div>
+        <a 
+          href="/admin/new-post"
+          class="bg-white text-primary-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors inline-flex items-center"
+        >
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Create New Story
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Admin Dashboard -->
+  <section class="py-16 bg-gray-50 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Quick Actions -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        <a href="/admin/new-post" class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1">
+          <div class="flex items-center">
+            <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
+              <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="text-lg font-semibold text-gray-900">New Story</div>
+              <div class="text-sm text-gray-600">Create a new post</div>
+            </div>
+          </div>
+        </a>
+
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+          <div class="flex items-center">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-gray-900">12</div>
+              <div class="text-sm text-gray-600">Published Stories</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+          <div class="flex items-center">
+            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+              <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-gray-900">3</div>
+              <div class="text-sm text-gray-600">Draft Stories</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+          <div class="flex items-center">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-gray-900">2.4k</div>
+              <div class="text-sm text-gray-600">Total Views</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Post Management -->
+      <PostManager />
+
+      <!-- Recent Activity -->
+      <div class="mt-12 bg-white rounded-xl shadow-lg p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Recent Activity</h2>
+        <div class="space-y-4">
+          <div class="flex items-center p-4 bg-gray-50 rounded-lg">
+            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-4">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-900">New story published</p>
+              <p class="text-xs text-gray-500">"Empowering Communities Through Education" was published 2 hours ago</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center p-4 bg-gray-50 rounded-lg">
+            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-900">Story updated</p>
+              <p class="text-xs text-gray-500">"Healthcare Initiatives" was updated 5 hours ago</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center p-4 bg-gray-50 rounded-lg">
+            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-4">
+              <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2h4a1 1 0 110 2h-1v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6H3a1 1 0 110-2h4z"></path>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-900">Draft saved</p>
+              <p class="text-xs text-gray-500">"Sustainable Development" draft was saved 1 day ago</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>

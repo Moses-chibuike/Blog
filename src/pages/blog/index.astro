@@ -1,0 +1,379 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import Footer from '../../components/Footer.astro';
+import { Search } from 'lucide-astro';
+
+const categories = ["All", "Education", "Healthcare", "Development", "Youth", "Infrastructure", "Economic", "Environment", "Community"];
+---
+
+<Layout title="Blog - AlaoMe" description="Read inspiring stories of transformation and community impact">
+  <Header />
+  
+  <!-- Blog Header -->
+  <section class="bg-primary-600 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="text-4xl sm:text-5xl font-bold text-white mb-4">
+        Stories of <span class="text-primary-200">Transformation</span>
+      </h1>
+      <p class="text-xl text-primary-100 max-w-3xl mx-auto">
+        Read about the lives we're changing, the communities we're building, and the hope we're spreading.
+      </p>
+    </div>
+  </section>
+
+  <!-- Search and Filter Section -->
+  <section class="py-8 bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+        <!-- Search Bar -->
+        <div class="relative w-full md:w-96">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search class="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Search stories..."
+            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+          />
+        </div>
+
+        <!-- Category Filter and Refresh -->
+        <div class="flex items-center space-x-4">
+          <div class="flex flex-wrap gap-2">
+            {categories.map((category) => (
+              <button class="px-4 py-2 text-sm font-medium rounded-full border transition-colors category-filter" data-category={category.toLowerCase()}>
+                {category}
+              </button>
+            ))}
+          </div>
+          <button 
+            id="refresh-posts"
+            class="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-500 transition-colors inline-flex items-center"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Blog Posts Grid -->
+  <section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="posts-grid">
+        <!-- Posts will be loaded here -->
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading-state" class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <p class="mt-2 text-gray-600">Loading stories...</p>
+      </div>
+
+      <!-- No Results Message -->
+      <div id="no-results" class="text-center py-12 hidden">
+        <div class="text-gray-500">
+          <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33" />
+          </svg>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No stories found</h3>
+          <p class="text-gray-500">Try adjusting your search or filter criteria.</p>
+        </div>
+      </div>
+
+      <!-- Load More Button -->
+      <div class="text-center mt-12" id="load-more-section">
+        <button id="load-more-btn" class="inline-flex items-center px-8 py-4 text-lg font-medium text-primary-600 bg-white border-2 border-primary-600 rounded-lg hover:bg-primary-600 hover:text-white transition-all duration-200">
+          Load More Stories
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+
+<script>
+  import { postStorage } from '../../utils/postStorage.js';
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const categoryFilters = document.querySelectorAll('.category-filter');
+    const searchInput = document.getElementById('search-input');
+    const postsGrid = document.getElementById('posts-grid');
+    const noResults = document.getElementById('no-results');
+    const loadingState = document.getElementById('loading-state');
+    const loadMoreSection = document.getElementById('load-more-section');
+    const refreshBtn = document.getElementById('refresh-posts');
+    
+    let currentFilter = 'all';
+    let currentSearch = '';
+    let displayedPosts = 0;
+    let allFilteredPosts = [];
+    const postsPerPage = 6;
+    
+    // Set initial active state for "All" filter
+    categoryFilters[0].classList.add('bg-primary-600', 'text-white', 'border-primary-600');
+    categoryFilters.forEach((filter, index) => {
+      if (index > 0) {
+        filter.classList.add('text-gray-600', 'border-gray-300', 'hover:border-primary-600', 'hover:text-primary-600');
+      }
+    });
+
+    // Load posts on page load
+    loadPosts();
+
+    // Refresh button
+    refreshBtn?.addEventListener('click', function() {
+      loadPosts();
+      showNotification('Stories refreshed!', 'success');
+    });
+
+    // Category filter functionality
+    categoryFilters.forEach(filter => {
+      filter.addEventListener('click', function() {
+        // Remove active state from all filters
+        categoryFilters.forEach(f => {
+          f.classList.remove('bg-primary-600', 'text-white', 'border-primary-600');
+          f.classList.add('text-gray-600', 'border-gray-300', 'hover:border-primary-600', 'hover:text-primary-600');
+        });
+        
+        // Add active state to clicked filter
+        this.classList.remove('text-gray-600', 'border-gray-300', 'hover:border-primary-600', 'hover:text-primary-600');
+        this.classList.add('bg-primary-600', 'text-white', 'border-primary-600');
+        
+        currentFilter = this.dataset.category;
+        filterAndDisplayPosts();
+      });
+    });
+
+    // Search functionality
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        currentSearch = this.value.toLowerCase();
+        filterAndDisplayPosts();
+      });
+    }
+
+    function loadPosts() {
+      showLoading(true);
+      
+      try {
+        // Get published posts from storage
+        const posts = postStorage.getPublishedPosts();
+        allFilteredPosts = posts;
+        filterAndDisplayPosts();
+      } catch (error) {
+        console.error('Error loading posts:', error);
+        showError();
+      }
+    }
+
+    // Filter and display posts
+    function filterAndDisplayPosts() {
+      showLoading(true);
+      
+      let filteredPosts = allFilteredPosts;
+      
+      // Apply category filter
+      if (currentFilter !== 'all') {
+        filteredPosts = filteredPosts.filter(post => 
+          post.category.toLowerCase() === currentFilter
+        );
+      }
+      
+      // Apply search filter
+      if (currentSearch) {
+        filteredPosts = filteredPosts.filter(post =>
+          post.title.toLowerCase().includes(currentSearch) ||
+          post.excerpt.toLowerCase().includes(currentSearch) ||
+          post.author.toLowerCase().includes(currentSearch) ||
+          post.category.toLowerCase().includes(currentSearch)
+        );
+      }
+      
+      // Display posts
+      displayPosts(filteredPosts);
+    }
+
+    function displayPosts(posts) {
+      showLoading(false);
+      
+      if (posts.length === 0) {
+        postsGrid.style.display = 'none';
+        noResults.classList.remove('hidden');
+        loadMoreSection.style.display = 'none';
+      } else {
+        postsGrid.style.display = 'grid';
+        noResults.classList.add('hidden');
+        loadMoreSection.style.display = 'block';
+        
+        // Clear current posts
+        postsGrid.innerHTML = '';
+        
+        // Show first batch of posts
+        displayedPosts = Math.min(posts.length, postsPerPage);
+        const postsToShow = posts.slice(0, displayedPosts);
+        
+        postsToShow.forEach(post => {
+          const postCard = createPostCard(post);
+          postsGrid.appendChild(postCard);
+        });
+        
+        // Update load more button
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        if (posts.length <= postsPerPage) {
+          loadMoreSection.style.display = 'none';
+        } else {
+          loadMoreBtn.textContent = `Load More Stories (${posts.length - displayedPosts} remaining)`;
+          loadMoreBtn.onclick = () => loadMorePosts(posts);
+        }
+      }
+    }
+
+    function loadMorePosts(allPosts) {
+      const nextBatch = allPosts.slice(displayedPosts, displayedPosts + postsPerPage);
+      
+      nextBatch.forEach(post => {
+        const postCard = createPostCard(post);
+        postsGrid.appendChild(postCard);
+      });
+      
+      displayedPosts += nextBatch.length;
+      
+      const loadMoreBtn = document.getElementById('load-more-btn');
+      if (displayedPosts >= allPosts.length) {
+        loadMoreSection.style.display = 'none';
+      } else {
+        loadMoreBtn.textContent = `Load More Stories (${allPosts.length - displayedPosts} remaining)`;
+      }
+    }
+
+    function createPostCard(post) {
+      const article = document.createElement('article');
+      article.className = 'bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden';
+      
+      article.innerHTML = `
+        <div class="relative overflow-hidden h-48">
+          <img 
+            src="${post.image}" 
+            alt="${post.title}"
+            class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+            loading="lazy"
+            onerror="this.src='https://images.pexels.com/photos/6646917/pexels-photo-6646917.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop'"
+          />
+          ${post.category ? `
+            <div class="absolute top-4 left-4">
+              <span class="bg-primary-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                ${post.category}
+              </span>
+            </div>
+          ` : ''}
+        </div>
+        <div class="p-6">
+          <div class="flex items-center text-sm text-gray-500 mb-3 space-x-4">
+            <div class="flex items-center">
+              <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a1 1 0 110 2h-1v9a2 2 0 01-2 2H7a2 2 0 01-2-2V9H4a1 1 0 110-2h4z"></path>
+              </svg>
+              <span>${post.date}</span>
+            </div>
+            <div class="flex items-center">
+              <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              <span>${post.author}</span>
+            </div>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3 leading-tight hover:text-primary-600 transition-colors">
+            <a href="/blog/${post.slug}">
+              ${post.title}
+            </a>
+          </h3>
+          <p class="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
+            ${post.excerpt}
+          </p>
+          <a 
+            href="/blog/${post.slug}"
+            class="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium text-sm transition-colors"
+          >
+            Read More
+            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </a>
+        </div>
+      `;
+      
+      return article;
+    }
+
+    function showLoading(show) {
+      if (show) {
+        loadingState.classList.remove('hidden');
+        postsGrid.style.display = 'none';
+        noResults.classList.add('hidden');
+      } else {
+        loadingState.classList.add('hidden');
+      }
+    }
+
+    function showError() {
+      showLoading(false);
+      postsGrid.style.display = 'none';
+      noResults.classList.remove('hidden');
+      noResults.innerHTML = `
+        <div class="text-gray-500">
+          <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Error loading stories</h3>
+          <p class="text-gray-500 mb-4">Please try refreshing the page.</p>
+          <button onclick="window.location.reload()" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-500 transition-colors">
+            Refresh Page
+          </button>
+        </div>
+      `;
+    }
+
+    // Notification system
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-x-full ${
+        type === 'success' ? 'bg-green-600 text-white' : 
+        type === 'error' ? 'bg-red-600 text-white' : 
+        'bg-blue-600 text-white'
+      }`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      // Animate in
+      setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+      }, 100);
+      
+      // Remove after 3 seconds
+      setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+          notification.remove();
+        }, 300);
+      }, 3000);
+    }
+  });
+</script>
+
+<style>
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

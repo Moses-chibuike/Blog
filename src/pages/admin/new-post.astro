@@ -1,0 +1,619 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import ImageUpload from '../../components/ImageUpload.astro';
+---
+
+<Layout title="Create New Post - AlaoMe Blog" description="Create a new blog post">
+  <Header />
+  
+  <!-- Header -->
+  <section class="bg-primary-600 py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+            Create New <span class="text-primary-200">Story</span>
+          </h1>
+          <p class="text-xl text-primary-100">
+            Share your story and make an impact
+          </p>
+        </div>
+        <a 
+          href="/admin"
+          class="bg-white text-primary-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+        >
+          Back to Admin
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Form -->
+  <section class="py-16 bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <form id="new-post-form" class="bg-white rounded-xl shadow-lg p-8 space-y-8">
+        <!-- Basic Information -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-gray-900 pb-2 border-b border-gray-200">
+            Basic Information
+          </h2>
+          
+          <div>
+            <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+              Post Title *
+            </label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors text-lg"
+              placeholder="Enter a compelling title for your post..."
+            />
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="author" class="block text-sm font-medium text-gray-700 mb-2">
+                Author *
+              </label>
+              <input
+                type="text"
+                id="author"
+                name="author"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                placeholder="Author name"
+              />
+            </div>
+            <div>
+              <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
+                Category *
+              </label>
+              <select
+                id="category"
+                name="category"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+              >
+                <option value="">Select Category</option>
+                <option value="Education">Education</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Development">Development</option>
+                <option value="Youth">Youth</option>
+                <option value="Infrastructure">Infrastructure</option>
+                <option value="Economic">Economic</option>
+                <option value="Environment">Environment</option>
+                <option value="Community">Community</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label for="excerpt" class="block text-sm font-medium text-gray-700 mb-2">
+              Post Excerpt *
+            </label>
+            <textarea
+              id="excerpt"
+              name="excerpt"
+              rows="3"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors resize-none"
+              placeholder="Write a brief, engaging summary of your post (150-200 characters)..."
+            ></textarea>
+            <div class="mt-1 text-sm text-gray-500">
+              <span id="excerpt-count">0</span>/200 characters
+            </div>
+          </div>
+        </div>
+
+        <!-- Featured Image -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-gray-900 pb-2 border-b border-gray-200">
+            Featured Image
+          </h2>
+          <div>
+            <label for="image-url" class="block text-sm font-medium text-gray-700 mb-2">
+              Featured Image URL *
+            </label>
+            <input
+              type="url"
+              id="image-url"
+              name="image-url"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+              placeholder="https://example.com/image.jpg"
+            />
+            <p class="mt-1 text-sm text-gray-500">Enter a direct URL to an image (recommended: 800x600px or larger)</p>
+            
+            <!-- Image Preview -->
+            <div id="image-preview" class="mt-4 hidden">
+              <img id="preview-img" src="" alt="Preview" class="w-full max-w-md h-48 object-cover rounded-lg shadow-sm" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-gray-900 pb-2 border-b border-gray-200">
+            Post Content *
+          </h2>
+          <div class="border border-gray-300 rounded-lg overflow-hidden">
+            <!-- Toolbar -->
+            <div class="border-b border-gray-200 p-3 bg-gray-50 flex flex-wrap gap-2">
+              <div class="flex items-center space-x-1">
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="bold" title="Bold">
+                  <strong>B</strong>
+                </button>
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="italic" title="Italic">
+                  <em>I</em>
+                </button>
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="underline" title="Underline">
+                  <u>U</u>
+                </button>
+              </div>
+              
+              <div class="border-l border-gray-300 mx-2"></div>
+              
+              <div class="flex items-center space-x-1">
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="formatBlock" data-value="h2" title="Heading 2">
+                  H2
+                </button>
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="formatBlock" data-value="h3" title="Heading 3">
+                  H3
+                </button>
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="formatBlock" data-value="p" title="Paragraph">
+                  P
+                </button>
+              </div>
+              
+              <div class="border-l border-gray-300 mx-2"></div>
+              
+              <div class="flex items-center space-x-1">
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="insertUnorderedList" title="Bullet List">
+                  • List
+                </button>
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="insertOrderedList" title="Numbered List">
+                  1. List
+                </button>
+              </div>
+            </div>
+            
+            <!-- Editor -->
+            <div
+              id="content-editor"
+              contenteditable="true"
+              class="p-4 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset prose max-w-none min-h-80"
+              data-placeholder="Tell your story... Share the impact, the challenges, and the hope you're bringing to communities."
+            ></div>
+            
+            <!-- Hidden input to store content -->
+            <input type="hidden" name="content" id="content-input" required />
+          </div>
+        </div>
+
+        <!-- Publishing Options -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-gray-900 pb-2 border-b border-gray-200">
+            Publishing Options
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                Status
+              </label>
+              <select
+                id="status"
+                name="status"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+              >
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
+              </select>
+            </div>
+            <div>
+              <label for="slug" class="block text-sm font-medium text-gray-700 mb-2">
+                URL Slug (Optional)
+              </label>
+              <input
+                type="text"
+                id="slug"
+                name="slug"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                placeholder="auto-generated-from-title"
+              />
+            </div>
+          </div>
+
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="featured"
+              name="featured"
+              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            />
+            <label for="featured" class="ml-2 text-sm font-medium text-gray-700">
+              Mark as Featured Post
+            </label>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-200">
+          <button
+            type="submit"
+            id="publish-btn"
+            class="flex-1 bg-primary-600 text-white px-6 py-4 rounded-lg font-medium text-lg hover:bg-primary-500 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+          >
+            <span id="publish-btn-text">Publish Post</span>
+          </button>
+          <button
+            type="button"
+            id="save-draft-btn"
+            class="flex-1 bg-gray-600 text-white px-6 py-4 rounded-lg font-medium text-lg hover:bg-gray-500 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          >
+            Save Draft
+          </button>
+          <button
+            type="button"
+            id="preview-btn"
+            class="flex-1 border-2 border-primary-600 text-primary-600 px-6 py-4 rounded-lg font-medium text-lg hover:bg-primary-50 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+          >
+            Preview Post
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+
+<script>
+  import { postStorage } from '../../utils/postStorage.js';
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const editor = document.getElementById('content-editor');
+    const contentInput = document.getElementById('content-input');
+    const imageUrlInput = document.getElementById('image-url');
+    const imagePreview = document.getElementById('image-preview');
+    const previewImg = document.getElementById('preview-img');
+    const placeholder = "Tell your story... Share the impact, the challenges, and the hope you're bringing to communities.";
+    
+    // Initialize editor
+    if (editor && contentInput) {
+      // Set initial placeholder
+      if (editor.textContent.trim() === '') {
+        editor.innerHTML = `<p class="text-gray-400">${placeholder}</p>`;
+      }
+      
+      // Handle focus/blur for placeholder
+      editor.addEventListener('focus', function() {
+        if (this.innerHTML.includes('text-gray-400')) {
+          this.innerHTML = '<p><br></p>';
+        }
+      });
+      
+      editor.addEventListener('blur', function() {
+        if (this.textContent.trim() === '') {
+          this.innerHTML = `<p class="text-gray-400">${placeholder}</p>`;
+          contentInput.value = '';
+        } else {
+          contentInput.value = this.innerHTML;
+        }
+      });
+      
+      // Update hidden input on content change
+      editor.addEventListener('input', function() {
+        if (!this.innerHTML.includes('text-gray-400')) {
+          contentInput.value = this.innerHTML;
+        }
+      });
+    }
+
+    // Image preview functionality
+    if (imageUrlInput && imagePreview && previewImg) {
+      imageUrlInput.addEventListener('input', function() {
+        const url = this.value.trim();
+        if (url && isValidImageUrl(url)) {
+          previewImg.src = url;
+          imagePreview.classList.remove('hidden');
+        } else {
+          imagePreview.classList.add('hidden');
+        }
+      });
+    }
+
+    function isValidImageUrl(url) {
+      try {
+        new URL(url);
+        return /\.(jpg|jpeg|png|gif|webp)$/i.test(url) || url.includes('pexels.com') || url.includes('unsplash.com');
+      } catch {
+        return false;
+      }
+    }
+
+    // Toolbar functionality
+    const formatButtons = document.querySelectorAll('[data-format]');
+    
+    formatButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const format = this.dataset.format;
+        const value = this.dataset.value;
+        
+        // Ensure editor is focused
+        editor?.focus();
+        
+        // Handle different formatting commands
+        if (format === 'formatBlock' && value) {
+          document.execCommand(format, false, value);
+        } else if (format) {
+          document.execCommand(format, false);
+        }
+        
+        // Update hidden input
+        if (contentInput && editor) {
+          contentInput.value = editor.innerHTML;
+        }
+      });
+    });
+
+    // Character counter for excerpt
+    const excerptField = document.getElementById('excerpt');
+    const excerptCount = document.getElementById('excerpt-count');
+    
+    if (excerptField && excerptCount) {
+      excerptField.addEventListener('input', function() {
+        const count = this.value.length;
+        excerptCount.textContent = count;
+        
+        if (count > 200) {
+          excerptCount.classList.add('text-red-500');
+        } else {
+          excerptCount.classList.remove('text-red-500');
+        }
+      });
+    }
+
+    // Auto-generate slug from title
+    const titleField = document.getElementById('title');
+    const slugField = document.getElementById('slug');
+    
+    if (titleField && slugField) {
+      titleField.addEventListener('input', function() {
+        if (!slugField.value) {
+          const slug = this.value
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim();
+          slugField.value = slug;
+        }
+      });
+    }
+
+    // Form submission handling
+    const form = document.getElementById('new-post-form');
+    const publishBtn = document.getElementById('publish-btn');
+    const publishBtnText = document.getElementById('publish-btn-text');
+    const draftBtn = document.getElementById('save-draft-btn');
+    const previewBtn = document.getElementById('preview-btn');
+
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        publishBtn.disabled = true;
+        publishBtnText.textContent = 'Publishing...';
+        
+        // Validate content
+        if (editor && (editor.textContent.trim() === '' || editor.innerHTML.includes('text-gray-400'))) {
+          showNotification('Please add content to your post', 'error');
+          resetPublishButton();
+          editor.focus();
+          return;
+        }
+        
+        // Update content input before submission
+        if (editor && contentInput && !editor.innerHTML.includes('text-gray-400')) {
+          contentInput.value = editor.innerHTML;
+        }
+        
+        // Get form data
+        const formData = new FormData(form);
+        const postData = {
+          title: formData.get('title'),
+          author: formData.get('author'),
+          category: formData.get('category'),
+          excerpt: formData.get('excerpt'),
+          content: formData.get('content'),
+          image: formData.get('image-url'),
+          status: formData.get('status'),
+          slug: formData.get('slug'),
+          featured: formData.has('featured'),
+          date: new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })
+        };
+        
+        // Validate required fields
+        if (!postData.title || !postData.author || !postData.category || !postData.excerpt || !postData.content || !postData.image) {
+          showNotification('Please fill in all required fields', 'error');
+          resetPublishButton();
+          return;
+        }
+        
+        try {
+          // Save post using postStorage
+          const savedPost = postStorage.addPost(postData);
+          
+          if (savedPost) {
+            showNotification(`Post ${postData.status === 'published' ? 'published' : 'saved as draft'} successfully!`, 'success');
+            
+            // Reset form
+            form.reset();
+            editor.innerHTML = `<p class="text-gray-400">${placeholder}</p>`;
+            imagePreview.classList.add('hidden');
+            
+            // Redirect to admin after delay
+            setTimeout(() => {
+              window.location.href = '/admin';
+            }, 1500);
+          } else {
+            throw new Error('Failed to save post');
+          }
+        } catch (error) {
+          console.error('Error saving post:', error);
+          showNotification('Error saving post. Please try again.', 'error');
+        }
+        
+        resetPublishButton();
+      });
+    }
+
+    function resetPublishButton() {
+      publishBtn.disabled = false;
+      publishBtnText.textContent = 'Publish Post';
+    }
+
+    if (draftBtn) {
+      draftBtn.addEventListener('click', function() {
+        // Set status to draft and submit
+        const statusField = document.getElementById('status');
+        if (statusField) {
+          statusField.value = 'draft';
+        }
+        
+        // Trigger form submission
+        form.dispatchEvent(new Event('submit'));
+      });
+    }
+
+    if (previewBtn) {
+      previewBtn.addEventListener('click', function() {
+        // Update content input
+        if (editor && contentInput && !editor.innerHTML.includes('text-gray-400')) {
+          contentInput.value = editor.innerHTML;
+        }
+        
+        const title = document.getElementById('title')?.value || 'Untitled Post';
+        const content = editor?.innerHTML || '';
+        const author = document.getElementById('author')?.value || 'Unknown Author';
+        const category = document.getElementById('category')?.value || 'General';
+        
+        if (content.includes('text-gray-400') || content.trim() === '') {
+          showNotification('Please add content to preview', 'error');
+          return;
+        }
+        
+        const previewWindow = window.open('', '_blank');
+        previewWindow.document.write(`
+          <html>
+            <head>
+              <title>Preview: ${title}</title>
+              <style>
+                body { font-family: Inter, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.6; }
+                h1 { color: #16a34a; margin-bottom: 1rem; }
+                .meta { color: #666; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #eee; }
+                .content { font-size: 1.1rem; }
+                h2 { color: #333; margin-top: 2rem; margin-bottom: 1rem; }
+                h3 { color: #333; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+                ul, ol { margin: 1rem 0; padding-left: 2rem; }
+                li { margin: 0.25rem 0; }
+                a { color: #16a34a; text-decoration: underline; }
+                img { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1rem 0; }
+                .category { background: #16a34a; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.875rem; }
+              </style>
+            </head>
+            <body>
+              <div class="meta">
+                <span class="category">${category}</span>
+                <div style="margin-top: 0.5rem; font-size: 0.875rem;">By ${author} • Preview Mode</div>
+              </div>
+              <h1>${title}</h1>
+              <div class="content">${content}</div>
+            </body>
+          </html>
+        `);
+      });
+    }
+
+    // Notification system
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-x-full ${
+        type === 'success' ? 'bg-green-600 text-white' : 
+        type === 'error' ? 'bg-red-600 text-white' : 
+        'bg-blue-600 text-white'
+      }`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      // Animate in
+      setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+      }, 100);
+      
+      // Remove after 3 seconds
+      setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+          notification.remove();
+        }, 300);
+      }, 3000);
+    }
+  });
+</script>
+
+<style>
+  [contenteditable]:focus {
+    outline: none;
+  }
+  
+  [contenteditable] h2 {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin: 1em 0 0.5em 0;
+  }
+  
+  [contenteditable] h3 {
+    font-size: 1.25em;
+    font-weight: bold;
+    margin: 1em 0 0.5em 0;
+  }
+  
+  [contenteditable] p {
+    margin: 0.5em 0;
+    line-height: 1.6;
+  }
+  
+  [contenteditable] ul, [contenteditable] ol {
+    margin: 0.5em 0;
+    padding-left: 2em;
+  }
+  
+  [contenteditable] li {
+    margin: 0.25em 0;
+  }
+  
+  [contenteditable] a {
+    color: #16a34a;
+    text-decoration: underline;
+  }
+  
+  [contenteditable] img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 1em 0;
+  }
+</style>

@@ -1,0 +1,79 @@
+---
+import { Calendar, User, ArrowRight } from 'lucide-astro';
+
+export interface Props {
+  title: string;
+  excerpt: string;
+  image: string;
+  date: string;
+  author: string;
+  slug: string;
+  category?: string;
+}
+
+const { title, excerpt, image, date, author, slug, category } = Astro.props;
+---
+
+<article class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
+  <!-- Image -->
+  <div class="relative overflow-hidden h-48">
+    <img 
+      src={image} 
+      alt={title}
+      class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+      loading="lazy"
+    />
+    {category && (
+      <div class="absolute top-4 left-4">
+        <span class="bg-primary-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+          {category}
+        </span>
+      </div>
+    )}
+  </div>
+
+  <!-- Content -->
+  <div class="p-6">
+    <!-- Meta Information -->
+    <div class="flex items-center text-sm text-gray-500 mb-3 space-x-4">
+      <div class="flex items-center">
+        <Calendar size={14} class="mr-1" />
+        <span>{date}</span>
+      </div>
+      <div class="flex items-center">
+        <User size={14} class="mr-1" />
+        <span>{author}</span>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <h3 class="text-xl font-bold text-gray-900 mb-3 leading-tight hover:text-primary-600 transition-colors">
+      <a href={`/blog/${slug}`}>
+        {title}
+      </a>
+    </h3>
+
+    <!-- Excerpt -->
+    <p class="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
+      {excerpt}
+    </p>
+
+    <!-- Read More Link -->
+    <a 
+      href={`/blog/${slug}`}
+      class="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium text-sm transition-colors"
+    >
+      Read More
+      <ArrowRight size={16} class="ml-1" />
+    </a>
+  </div>
+</article>
+
+<style>
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

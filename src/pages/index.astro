@@ -1,0 +1,100 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import BlogCard from '../components/BlogCard.astro';
+import Footer from '../components/Footer.astro';
+
+// Sample blog posts data
+const featuredPosts = [
+  {
+    title: "Empowering Communities Through Education",
+    excerpt: "Discover how our education programs are transforming lives in underserved communities, providing hope and opportunities for a brighter future.",
+    image: "https://images.pexels.com/photos/8112198/pexels-photo-8112198.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
+    date: "December 15, 2024",
+    author: "Sarah Johnson",
+    slug: "empowering-communities-education",
+    category: "Education"
+  },
+  {
+    title: "Building Hope Through Healthcare Initiatives",
+    excerpt: "Learn about our mobile healthcare clinics bringing essential medical services to remote areas, saving lives and building healthier communities.",
+    image: "https://images.pexels.com/photos/6975474/pexels-photo-6975474.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
+    date: "December 10, 2024",
+    author: "Dr. Michael Chen",
+    slug: "building-hope-healthcare",
+    category: "Healthcare"
+  },
+  {
+    title: "Sustainable Development: Creating Lasting Change",
+    excerpt: "Explore our sustainable development projects that are creating long-term positive impact in communities around the world.",
+    image: "https://images.pexels.com/photos/6646844/pexels-photo-6646844.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
+    date: "December 5, 2024",
+    author: "Emma Rodriguez",
+    slug: "sustainable-development-change",
+    category: "Development"
+  }
+];
+---
+
+<Layout title="AlaoMe - Transforming Lives, One Story at a Time">
+  <Header />
+  <Hero />
+  
+  <!-- Featured Stories Section -->
+  <section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+          Latest Stories of <span class="text-primary-600">Transformation</span>
+        </h2>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+          Read about the lives we're changing and the communities we're building together.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {featuredPosts.map((post) => (
+          <BlogCard {...post} />
+        ))}
+      </div>
+
+      <div class="text-center mt-12">
+        <a 
+          href="/blog"
+          class="inline-flex items-center px-8 py-4 text-lg font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-500 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+        >
+          View All Stories
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Impact Statistics -->
+  <section class="py-16 bg-primary-600">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+          Our Impact in Numbers
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="text-center">
+          <div class="text-4xl sm:text-5xl font-bold text-primary-100 mb-2">1,250+</div>
+          <div class="text-lg text-primary-200">Lives Transformed</div>
+        </div>
+        <div class="text-center">
+          <div class="text-4xl sm:text-5xl font-bold text-primary-100 mb-2">85</div>
+          <div class="text-lg text-primary-200">Communities Served</div>
+        </div>
+        <div class="text-center">
+          <div class="text-4xl sm:text-5xl font-bold text-primary-100 mb-2">500+</div>
+          <div class="text-lg text-primary-200">Volunteers</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>

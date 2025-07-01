@@ -1,0 +1,506 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import ImageUpload from '../../../components/ImageUpload.astro';
+import RichTextEditor from '../../../components/RichTextEditor.astro';
+
+// Mock data - in a real app, this would come from a database
+const posts = {
+  '1': {
+    id: 1,
+    title: "Empowering Communities Through Education",
+    author: "Sarah Johnson",
+    category: "Education",
+    excerpt: "Discover how our education programs are transforming lives in underserved communities, providing hope and opportunities for a brighter future.",
+    content: `<p>Education is the foundation of transformation. In our work across underserved communities, we've witnessed firsthand how access to quality education can break cycles of poverty and create pathways to brighter futures.</p>
+
+<h2>The Challenge</h2>
+<p>Many communities lack access to basic educational resources. Children walk miles to reach the nearest school, often lacking textbooks, supplies, and even qualified teachers.</p>
+
+<h2>Our Approach</h2>
+<p>We believe in sustainable, community-driven solutions. Our education programs focus on building schools, training teachers, and providing educational materials.</p>`,
+    image: "https://images.pexels.com/photos/8112198/pexels-photo-8112198.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
+    status: "published",
+    featured: true,
+    publishDate: "2024-12-15T10:00",
+    slug: "empowering-communities-education",
+    metaTitle: "Empowering Communities Through Education - AlaoMe",
+    metaDescription: "Discover how our education programs are transforming lives in underserved communities."
+  }
+};
+
+export function getStaticPaths() {
+  return Object.keys(posts).map(id => ({
+    params: { id }
+  }));
+}
+
+const { id } = Astro.params;
+const post = posts[id as keyof typeof posts];
+
+if (!post) {
+  return Astro.redirect('/admin');
+}
+---
+
+<Layout title={`Edit: ${post.title} - AlaoMe Blog`} description="Edit blog post">
+  <Header />
+  
+  <!-- Header -->
+  <section class="bg-primary-600 py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+            Edit <span class="text-accent-300">Story</span>
+          </h1>
+          <p class="text-xl text-primary-100">
+            Update your story and make changes
+          </p>
+        </div>
+        <a 
+          href="/admin"
+          class="bg-white text-primary-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+        >
+          Back to Admin
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Form -->
+  <section class="py-16 bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <form id="edit-post-form" class="bg-white rounded-xl shadow-lg p-8 space-y-8">
+        <!-- Basic Information -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-gray-900 pb-2 border-b border-gray-200">
+            Basic Information
+          </h2>
+          
+          <div>
+            <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+              Post Title *
+            </label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              required
+              value={post.title}
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors text-lg"
+              placeholder="Enter a compelling title for your post..."
+            />
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="author" class="block text-sm font-medium text-gray-700 mb-2">
+                Author *
+              </label>
+              <input
+                type="text"
+                id="author"
+                name="author"
+                required
+                value={post.author}
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                placeholder="Author name"
+              />
+            </div>
+            <div>
+              <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
+                Category *
+              </label>
+              <select
+                id="category"
+                name="category"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+              >
+                <option value="">Select Category</option>
+                <option value="Education" selected={post.category === 'Education'}>Education</option>
+                <option value="Healthcare" selected={post.category === 'Healthcare'}>Healthcare</option>
+                <option value="Development" selected={post.category === 'Development'}>Development</option>
+                <option value="Youth" selected={post.category === 'Youth'}>Youth</option>
+                <option value="Infrastructure" selected={post.category === 'Infrastructure'}>Infrastructure</option>
+                <option value="Economic" selected={post.category === 'Economic'}>Economic</option>
+                <option value="Environment" selected={post.category === 'Environment'}>Environment</option>
+                <option value="Community" selected={post.category === 'Community'}>Community</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label for="excerpt" class="block text-sm font-medium text-gray-700 mb-2">
+              Post Excerpt *
+            </label>
+            <textarea
+              id="excerpt"
+              name="excerpt"
+              rows="3"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors resize-none"
+              placeholder="Write a brief, engaging summary of your post (150-200 characters)..."
+            >{post.excerpt}</textarea>
+            <div class="mt-1 text-sm text-gray-500">
+              <span id="excerpt-count">{post.excerpt.length}</span>/200 characters
+            </div>
+          </div>
+        </div>
+
+        <!-- Current Featured Image -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-gray-900 pb-2 border-b border-gray-200">
+            Current Featured Image
+          </h2>
+          <div class="flex items-start space-x-4">
+            <img 
+              src={post.image} 
+              alt={post.title}
+              class="w-32 h-32 object-cover rounded-lg shadow-sm"
+            />
+            <div class="flex-1">
+              <p class="text-sm text-gray-600 mb-3">Current featured image for this story</p>
+              <button 
+                type="button" 
+                id="remove-current-image"
+                class="text-red-600 hover:text-red-700 text-sm font-medium"
+              >
+                Remove Current Image
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Replace Featured Image -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-gray-900 pb-2 border-b border-gray-200">
+            Replace Featured Image (Optional)
+          </h2>
+          <ImageUpload 
+            id="featured-image" 
+            name="featured-image" 
+            label="New Featured Image" 
+            description="Upload a new image to replace the current one (recommended: 1200x800px, max 5MB)"
+          />
+        </div>
+
+        <!-- Content -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-gray-900 pb-2 border-b border-gray-200">
+            Post Content
+          </h2>
+          <div class="border border-gray-300 rounded-lg">
+            <div class="border-b border-gray-200 p-3 bg-gray-50 rounded-t-lg">
+              <div class="flex flex-wrap gap-2">
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="bold">
+                  <strong>B</strong>
+                </button>
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="italic">
+                  <em>I</em>
+                </button>
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="underline">
+                  <u>U</u>
+                </button>
+                <div class="border-l border-gray-300 mx-2"></div>
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="formatBlock" data-value="h2">
+                  H2
+                </button>
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="formatBlock" data-value="h3">
+                  H3
+                </button>
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="formatBlock" data-value="p">
+                  P
+                </button>
+                <div class="border-l border-gray-300 mx-2"></div>
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="insertUnorderedList">
+                  • List
+                </button>
+                <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="insertOrderedList">
+                  1. List
+                </button>
+              </div>
+            </div>
+            <div
+              id="content-editor"
+              contenteditable="true"
+              class="min-h-64 p-4 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-b-lg prose max-w-none"
+              set:html={post.content}
+            ></div>
+          </div>
+        </div>
+
+        <!-- SEO Settings -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-gray-900 pb-2 border-b border-gray-200">
+            SEO Settings
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="meta-title" class="block text-sm font-medium text-gray-700 mb-2">
+                Meta Title
+              </label>
+              <input
+                type="text"
+                id="meta-title"
+                name="meta-title"
+                value={post.metaTitle}
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                placeholder="SEO title"
+              />
+            </div>
+            <div>
+              <label for="slug" class="block text-sm font-medium text-gray-700 mb-2">
+                URL Slug
+              </label>
+              <input
+                type="text"
+                id="slug"
+                name="slug"
+                value={post.slug}
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                placeholder="url-friendly-title"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label for="meta-description" class="block text-sm font-medium text-gray-700 mb-2">
+              Meta Description
+            </label>
+            <textarea
+              id="meta-description"
+              name="meta-description"
+              rows="2"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors resize-none"
+              placeholder="SEO description"
+            >{post.metaDescription}</textarea>
+          </div>
+        </div>
+
+        <!-- Publishing Options -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-gray-900 pb-2 border-b border-gray-200">
+            Publishing Options
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="publish-date" class="block text-sm font-medium text-gray-700 mb-2">
+                Publish Date
+              </label>
+              <input
+                type="datetime-local"
+                id="publish-date"
+                name="publish-date"
+                value={post.publishDate}
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+              />
+            </div>
+            <div>
+              <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                Status
+              </label>
+              <select
+                id="status"
+                name="status"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+              >
+                <option value="draft" selected={post.status === 'draft'}>Draft</option>
+                <option value="published" selected={post.status === 'published'}>Published</option>
+                <option value="scheduled" selected={post.status === 'scheduled'}>Scheduled</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="featured"
+              name="featured"
+              checked={post.featured}
+              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            />
+            <label for="featured" class="ml-2 text-sm font-medium text-gray-700">
+              Mark as Featured Post
+            </label>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-200">
+          <button
+            type="submit"
+            class="flex-1 bg-primary-600 text-white px-6 py-4 rounded-lg font-medium text-lg hover:bg-primary-500 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+          >
+            Update Story
+          </button>
+          <button
+            type="button"
+            id="save-draft-btn"
+            class="flex-1 bg-gray-600 text-white px-6 py-4 rounded-lg font-medium text-lg hover:bg-gray-500 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          >
+            Save as Draft
+          </button>
+          <button
+            type="button"
+            id="preview-btn"
+            class="flex-1 border-2 border-primary-600 text-primary-600 px-6 py-4 rounded-lg font-medium text-lg hover:bg-primary-50 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+          >
+            Preview Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+
+<script define:vars={{ post }}>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Character counter for excerpt
+    const excerptField = document.getElementById('excerpt');
+    const excerptCount = document.getElementById('excerpt-count');
+    
+    if (excerptField && excerptCount) {
+      excerptField.addEventListener('input', function() {
+        const count = this.value.length;
+        excerptCount.textContent = count;
+        
+        if (count > 200) {
+          excerptCount.classList.add('text-red-500');
+        } else {
+          excerptCount.classList.remove('text-red-500');
+        }
+      });
+    }
+
+    // Rich text editor functionality
+    const formatButtons = document.querySelectorAll('[data-format]');
+    const contentDiv = document.getElementById('content-editor');
+
+    formatButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const format = this.dataset.format;
+        const value = this.dataset.value;
+        
+        if (format === 'formatBlock' && value) {
+          document.execCommand(format, false, value);
+        } else if (format) {
+          document.execCommand(format, false);
+        }
+        
+        contentDiv?.focus();
+      });
+    });
+
+    // Remove current image
+    const removeImageBtn = document.getElementById('remove-current-image');
+    removeImageBtn?.addEventListener('click', function() {
+      if (confirm('Are you sure you want to remove the current featured image?')) {
+        const imageContainer = this.closest('.space-y-6');
+        imageContainer.style.opacity = '0.5';
+        this.textContent = 'Image will be removed on save';
+        this.classList.add('text-gray-500');
+        this.disabled = true;
+      }
+    });
+
+    // Form submission handling
+    const form = document.getElementById('edit-post-form');
+    const draftBtn = document.getElementById('save-draft-btn');
+    const previewBtn = document.getElementById('preview-btn');
+
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Get form data
+        const formData = new FormData(form);
+        const postData = Object.fromEntries(formData.entries());
+        postData.content = contentDiv?.innerHTML || '';
+        
+        console.log('Updating post:', postData);
+        
+        // Show success message
+        showNotification('Story updated successfully!', 'success');
+        
+        // Redirect back to admin
+        setTimeout(() => {
+          window.location.href = '/admin';
+        }, 1500);
+      });
+    }
+
+    if (draftBtn) {
+      draftBtn.addEventListener('click', function() {
+        const statusField = document.getElementById('status');
+        if (statusField) {
+          statusField.value = 'draft';
+        }
+        
+        showNotification('Story saved as draft!', 'success');
+      });
+    }
+
+    if (previewBtn) {
+      previewBtn.addEventListener('click', function() {
+        const title = document.getElementById('title')?.value || 'Untitled Post';
+        const content = contentDiv?.innerHTML || '';
+        
+        const previewWindow = window.open('', '_blank');
+        previewWindow.document.write(`
+          <html>
+            <head>
+              <title>Preview: ${title}</title>
+              <style>
+                body { font-family: Inter, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.6; }
+                h1 { color: #16a34a; margin-bottom: 1rem; }
+                .meta { color: #666; margin-bottom: 2rem; }
+                .content { font-size: 1.1rem; }
+                h2 { color: #333; margin-top: 2rem; margin-bottom: 1rem; }
+                h3 { color: #333; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+              </style>
+            </head>
+            <body>
+              <h1>${title}</h1>
+              <div class="meta">Preview Mode - Updated Version</div>
+              <div class="content">${content}</div>
+            </body>
+          </html>
+        `);
+      });
+    }
+
+    // Notification system
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-x-full ${
+        type === 'success' ? 'bg-green-600 text-white' : 
+        type === 'error' ? 'bg-red-600 text-white' : 
+        'bg-blue-600 text-white'
+      }`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      // Animate in
+      setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+      }, 100);
+      
+      // Remove after 3 seconds
+      setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+          notification.remove();
+        }, 300);
+      }, 3000);
+    }
+  });
+</script>

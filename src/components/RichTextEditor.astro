@@ -1,0 +1,212 @@
+---
+export interface Props {
+  id: string;
+  name: string;
+  placeholder?: string;
+  required?: boolean;
+  minHeight?: string;
+}
+
+const { 
+  id, 
+  name, 
+  placeholder = "Start writing...", 
+  required = false,
+  minHeight = "16rem"
+} = Astro.props;
+---
+
+<div class="border border-gray-300 rounded-lg overflow-hidden">
+  <!-- Toolbar -->
+  <div class="border-b border-gray-200 p-3 bg-gray-50 flex flex-wrap gap-2">
+    <div class="flex items-center space-x-1">
+      <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="bold" title="Bold">
+        <strong>B</strong>
+      </button>
+      <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="italic" title="Italic">
+        <em>I</em>
+      </button>
+      <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="underline" title="Underline">
+        <u>U</u>
+      </button>
+    </div>
+    
+    <div class="border-l border-gray-300 mx-2"></div>
+    
+    <div class="flex items-center space-x-1">
+      <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="formatBlock" data-value="h2" title="Heading 2">
+        H2
+      </button>
+      <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="formatBlock" data-value="h3" title="Heading 3">
+        H3
+      </button>
+      <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="formatBlock" data-value="p" title="Paragraph">
+        P
+      </button>
+    </div>
+    
+    <div class="border-l border-gray-300 mx-2"></div>
+    
+    <div class="flex items-center space-x-1">
+      <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="insertUnorderedList" title="Bullet List">
+        • List
+      </button>
+      <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="insertOrderedList" title="Numbered List">
+        1. List
+      </button>
+    </div>
+    
+    <div class="border-l border-gray-300 mx-2"></div>
+    
+    <div class="flex items-center space-x-1">
+      <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="createLink" title="Insert Link">
+        🔗 Link
+      </button>
+      <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded transition-colors" data-format="insertImage" title="Insert Image">
+        🖼️ Image
+      </button>
+    </div>
+  </div>
+  
+  <!-- Editor -->
+  <div
+    {id}
+    contenteditable="true"
+    class="p-4 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset prose max-w-none"
+    style={`min-height: ${minHeight}`}
+    data-placeholder={placeholder}
+    data-name={name}
+    data-required={required}
+  ></div>
+  
+  <!-- Hidden input to store content -->
+  <input type="hidden" {name} {id}-input {required} />
+</div>
+
+<script define:vars={{ id, placeholder }}>
+  document.addEventListener('DOMContentLoaded', function() {
+    const editor = document.getElementById(id);
+    const hiddenInput = document.getElementById(`${id}-input`);
+    const toolbar = editor?.previousElementSibling;
+    
+    if (!editor || !hiddenInput || !toolbar) return;
+    
+    // Initialize placeholder
+    if (editor.textContent.trim() === '') {
+      editor.innerHTML = `<p class="text-gray-400">${placeholder}</p>`;
+    }
+    
+    // Handle focus/blur for placeholder
+    editor.addEventListener('focus', function() {
+      if (this.innerHTML.includes('text-gray-400')) {
+        this.innerHTML = '<p><br></p>';
+      }
+    });
+    
+    editor.addEventListener('blur', function() {
+      if (this.textContent.trim() === '') {
+        this.innerHTML = `<p class="text-gray-400">${placeholder}</p>`;
+        hiddenInput.value = '';
+      } else {
+        hiddenInput.value = this.innerHTML;
+      }
+    });
+    
+    // Update hidden input on content change
+    editor.addEventListener('input', function() {
+      if (!this.innerHTML.includes('text-gray-400')) {
+        hiddenInput.value = this.innerHTML;
+      }
+    });
+    
+    // Toolbar functionality
+    const formatButtons = toolbar.querySelectorAll('[data-format]');
+    
+    formatButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const format = this.dataset.format;
+        const value = this.dataset.value;
+        
+        // Ensure editor is focused
+        editor.focus();
+        
+        // Handle different formatting commands
+        if (format === 'createLink') {
+          const url = prompt('Enter URL:');
+          if (url) {
+            document.execCommand(format, false, url);
+          }
+        } else if (format === 'insertImage') {
+          const url = prompt('Enter image URL:');
+          if (url) {
+            document.execCommand(format, false, url);
+          }
+        } else if (format === 'formatBlock' && value) {
+          document.execCommand(format, false, value);
+        } else if (format) {
+          document.execCommand(format, false);
+        }
+        
+        // Update hidden input
+        hiddenInput.value = editor.innerHTML;
+      });
+    });
+    
+    // Prevent form submission if required and empty
+    const form = editor.closest('form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        if (editor.dataset.required === 'true' && editor.textContent.trim() === '') {
+          e.preventDefault();
+          alert('Please fill in the required content field.');
+          editor.focus();
+        }
+      });
+    }
+  });
+</script>
+
+<style>
+  [contenteditable]:focus {
+    outline: none;
+  }
+  
+  [contenteditable] h2 {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin: 1em 0 0.5em 0;
+  }
+  
+  [contenteditable] h3 {
+    font-size: 1.25em;
+    font-weight: bold;
+    margin: 1em 0 0.5em 0;
+  }
+  
+  [contenteditable] p {
+    margin: 0.5em 0;
+    line-height: 1.6;
+  }
+  
+  [contenteditable] ul, [contenteditable] ol {
+    margin: 0.5em 0;
+    padding-left: 2em;
+  }
+  
+  [contenteditable] li {
+    margin: 0.25em 0;
+  }
+  
+  [contenteditable] a {
+    color: #16a34a;
+    text-decoration: underline;
+  }
+  
+  [contenteditable] img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 1em 0;
+  }
+</style>

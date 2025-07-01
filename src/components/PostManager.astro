@@ -1,0 +1,414 @@
+---
+import { Calendar, User, Edit, Trash2, Eye, Plus, Image } from 'lucide-astro';
+---
+
+<div class="bg-white rounded-xl shadow-lg overflow-hidden">
+  <!-- Header -->
+  <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-primary-100">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900">Story Management</h2>
+        <p class="text-sm text-gray-600 mt-1">Create, edit, and manage your blog stories</p>
+      </div>
+      <div class="flex items-center space-x-3">
+        <select id="status-filter" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+          <option value="all">All Stories</option>
+          <option value="published">Published</option>
+          <option value="draft">Drafts</option>
+        </select>
+        <button 
+          id="refresh-posts"
+          class="bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-500 transition-colors inline-flex items-center"
+        >
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          Refresh
+        </button>
+        <a 
+          href="/admin/new-post"
+          class="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-500 transition-colors inline-flex items-center"
+        >
+          <Plus size={16} class="mr-2" />
+          New Story
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="p-6 border-b border-gray-200 bg-gray-50">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded-lg shadow-sm">
+        <div class="text-2xl font-bold text-primary-600" id="total-posts">0</div>
+        <div class="text-sm text-gray-600">Total Stories</div>
+      </div>
+      <div class="bg-white p-4 rounded-lg shadow-sm">
+        <div class="text-2xl font-bold text-green-600" id="published-posts">0</div>
+        <div class="text-sm text-gray-600">Published</div>
+      </div>
+      <div class="bg-white p-4 rounded-lg shadow-sm">
+        <div class="text-2xl font-bold text-yellow-600" id="draft-posts">0</div>
+        <div class="text-sm text-gray-600">Drafts</div>
+      </div>
+      <div class="bg-white p-4 rounded-lg shadow-sm">
+        <div class="text-2xl font-bold text-blue-600" id="total-views">0</div>
+        <div class="text-sm text-gray-600">Total Views</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Posts List -->
+  <div id="posts-container" class="divide-y divide-gray-200">
+    <!-- Posts will be loaded here -->
+  </div>
+
+  <!-- Empty State -->
+  <div id="empty-state" class="p-12 text-center hidden">
+    <div class="text-gray-400 mb-4">
+      <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33" />
+      </svg>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">No stories found</h3>
+    <p class="text-gray-500 mb-4">Get started by creating your first story.</p>
+    <a 
+      href="/admin/new-post"
+      class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-500 transition-colors"
+    >
+      <Plus size={16} class="mr-2" />
+      Create New Story
+    </a>
+  </div>
+
+  <!-- Pagination -->
+  <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+    <div class="flex items-center justify-between text-sm text-gray-600">
+      <span id="posts-count">Showing 0 of 0 stories</span>
+      <div class="flex items-center space-x-2">
+        <button id="prev-page" class="px-3 py-1 border border-gray-300 rounded hover:bg-white transition-colors disabled:opacity-50" disabled>
+          Previous
+        </button>
+        <span id="current-page" class="px-3 py-1 bg-primary-600 text-white rounded">1</span>
+        <button id="next-page" class="px-3 py-1 border border-gray-300 rounded hover:bg-white transition-colors disabled:opacity-50" disabled>
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+    <div class="p-6">
+      <div class="flex items-center mb-4">
+        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+          <Trash2 size={24} class="text-red-600" />
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">Delete Story</h3>
+          <p class="text-sm text-gray-600">This action cannot be undone</p>
+        </div>
+      </div>
+      
+      <p class="text-gray-700 mb-6">
+        Are you sure you want to delete "<span id="delete-story-title" class="font-medium"></span>"? 
+        This will permanently remove the story and all its content.
+      </p>
+      
+      <div class="flex space-x-3">
+        <button 
+          id="confirm-delete"
+          class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-500 transition-colors"
+        >
+          Delete Story
+        </button>
+        <button 
+          id="cancel-delete"
+          class="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  import { postStorage } from '../utils/postStorage.js';
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const postsContainer = document.getElementById('posts-container');
+    const emptyState = document.getElementById('empty-state');
+    const deleteModal = document.getElementById('delete-modal');
+    const deleteTitle = document.getElementById('delete-story-title');
+    const confirmDelete = document.getElementById('confirm-delete');
+    const cancelDelete = document.getElementById('cancel-delete');
+    const statusFilter = document.getElementById('status-filter');
+    const refreshBtn = document.getElementById('refresh-posts');
+    
+    let currentDeleteId = null;
+    let currentFilter = 'all';
+
+    // Load posts on page load
+    loadPosts();
+
+    // Refresh button
+    refreshBtn?.addEventListener('click', function() {
+      loadPosts();
+      showNotification('Posts refreshed!', 'success');
+    });
+
+    // Status filter
+    statusFilter?.addEventListener('change', function() {
+      currentFilter = this.value;
+      loadPosts();
+    });
+
+    function loadPosts() {
+      try {
+        let posts = postStorage.getAllPosts();
+        
+        // Apply filter
+        if (currentFilter !== 'all') {
+          posts = posts.filter(post => post.status === currentFilter);
+        }
+        
+        // Update stats
+        updateStats();
+        
+        // Display posts
+        if (posts.length === 0) {
+          postsContainer.style.display = 'none';
+          emptyState.classList.remove('hidden');
+        } else {
+          postsContainer.style.display = 'block';
+          emptyState.classList.add('hidden');
+          renderPosts(posts);
+        }
+        
+        // Update pagination
+        updatePagination(posts.length);
+        
+      } catch (error) {
+        console.error('Error loading posts:', error);
+        showNotification('Error loading posts', 'error');
+      }
+    }
+
+    function updateStats() {
+      const stats = postStorage.getStats();
+      document.getElementById('total-posts').textContent = stats.total;
+      document.getElementById('published-posts').textContent = stats.published;
+      document.getElementById('draft-posts').textContent = stats.drafts;
+      document.getElementById('total-views').textContent = stats.totalViews.toLocaleString();
+    }
+
+    function renderPosts(posts) {
+      postsContainer.innerHTML = '';
+      
+      posts.forEach(post => {
+        const postElement = createPostElement(post);
+        postsContainer.appendChild(postElement);
+      });
+    }
+
+    function createPostElement(post) {
+      const div = document.createElement('div');
+      div.className = 'p-6 hover:bg-gray-50 transition-colors';
+      
+      div.innerHTML = `
+        <div class="flex items-start space-x-4">
+          <!-- Post Image -->
+          <div class="flex-shrink-0">
+            <img 
+              src="${post.image}" 
+              alt="${post.title}"
+              class="w-20 h-20 object-cover rounded-lg shadow-sm"
+              onerror="this.src='https://images.pexels.com/photos/6646917/pexels-photo-6646917.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'"
+            />
+          </div>
+
+          <!-- Post Content -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <div class="flex items-center space-x-3 mb-2">
+                  <h3 class="text-lg font-semibold text-gray-900 hover:text-primary-600 cursor-pointer truncate">
+                    ${post.title}
+                  </h3>
+                  <span class="px-2 py-1 text-xs font-medium rounded-full ${
+                    post.status === 'published' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-yellow-100 text-yellow-800'
+                  }">
+                    ${post.status}
+                  </span>
+                  ${post.featured ? '<span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Featured</span>' : ''}
+                </div>
+                
+                <p class="text-sm text-gray-600 mb-3 line-clamp-2">
+                  ${post.excerpt}
+                </p>
+                
+                <div class="flex items-center text-xs text-gray-500 space-x-4">
+                  <div class="flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    <span>${post.author}</span>
+                  </div>
+                  <div class="flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a1 1 0 110 2h-1v9a2 2 0 01-2 2H7a2 2 0 01-2-2V9H4a1 1 0 110-2h4z"></path>
+                    </svg>
+                    <span>${post.date}</span>
+                  </div>
+                  <div class="flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    <span>${post.views || 0} views</span>
+                  </div>
+                  <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                    ${post.category}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex items-center space-x-2 ml-4">
+                <button 
+                  class="p-2 text-gray-400 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50" 
+                  title="View Story"
+                  onclick="viewPost('${post.slug}')"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                </button>
+                <button 
+                  class="p-2 text-gray-400 hover:text-primary-600 transition-colors rounded-lg hover:bg-primary-50" 
+                  title="Edit Story"
+                  onclick="editPost(${post.id})"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                  </svg>
+                </button>
+                <button 
+                  class="p-2 text-gray-400 hover:text-red-600 transition-colors rounded-lg hover:bg-red-50" 
+                  title="Delete Story"
+                  onclick="confirmDeletePost(${post.id}, '${post.title.replace(/'/g, "\\'")}')"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      return div;
+    }
+
+    function updatePagination(totalPosts) {
+      const postsCount = document.getElementById('posts-count');
+      if (postsCount) {
+        postsCount.textContent = `Showing ${totalPosts} of ${totalPosts} stories`;
+      }
+    }
+
+    // Global functions for post actions
+    window.viewPost = function(slug) {
+      window.open(`/blog/${slug}`, '_blank');
+    };
+
+    window.editPost = function(id) {
+      window.location.href = `/admin/edit-post/${id}`;
+    };
+
+    window.confirmDeletePost = function(id, title) {
+      currentDeleteId = id;
+      deleteTitle.textContent = title;
+      deleteModal.classList.remove('hidden');
+      deleteModal.classList.add('flex');
+    };
+
+    // Handle delete confirmation
+    confirmDelete?.addEventListener('click', function() {
+      if (currentDeleteId) {
+        try {
+          const success = postStorage.deletePost(currentDeleteId);
+          if (success) {
+            showNotification('Story deleted successfully', 'success');
+            loadPosts(); // Reload posts
+          } else {
+            showNotification('Error deleting story', 'error');
+          }
+        } catch (error) {
+          console.error('Error deleting post:', error);
+          showNotification('Error deleting story', 'error');
+        }
+        
+        closeDeleteModal();
+      }
+    });
+
+    // Handle delete cancellation
+    cancelDelete?.addEventListener('click', closeDeleteModal);
+
+    // Close modal when clicking outside
+    deleteModal?.addEventListener('click', function(e) {
+      if (e.target === deleteModal) {
+        closeDeleteModal();
+      }
+    });
+
+    function closeDeleteModal() {
+      deleteModal?.classList.add('hidden');
+      deleteModal?.classList.remove('flex');
+      currentDeleteId = null;
+    }
+
+    // Notification system
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-x-full ${
+        type === 'success' ? 'bg-green-600 text-white' : 
+        type === 'error' ? 'bg-red-600 text-white' : 
+        'bg-blue-600 text-white'
+      }`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      // Animate in
+      setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+      }, 100);
+      
+      // Remove after 3 seconds
+      setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+          notification.remove();
+        }, 300);
+      }, 3000);
+    }
+  });
+</script>
