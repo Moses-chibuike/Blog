@@ -207,13 +207,15 @@ import { Heart, Users, GraduationCap, Stethoscope, Home, Droplets } from 'lucide
 </Layout>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', () => {
     const donationButtons = document.querySelectorAll('.donation-amount');
-    const customAmountInput = document.getElementById('custom-amount');
+    const customAmountInput = document.getElementById('custom-amount') as HTMLInputElement;
 
     donationButtons.forEach(button => {
-      button.addEventListener('click', function(e) {
+      button.addEventListener('click', (e) => {
         e.preventDefault();
+        
+        const target = e.currentTarget as HTMLButtonElement;
         
         // Remove active state from all buttons
         donationButtons.forEach(btn => {
@@ -222,19 +224,19 @@ import { Heart, Users, GraduationCap, Stethoscope, Home, Droplets } from 'lucide
         });
         
         // Add active state to clicked button
-        this.classList.remove('border-gray-300');
-        this.classList.add('border-primary-500', 'bg-primary-50', 'text-primary-700');
+        target.classList.remove('border-gray-300');
+        target.classList.add('border-primary-500', 'bg-primary-50', 'text-primary-700');
         
         // Set the custom amount input
-        if (customAmountInput) {
-          customAmountInput.value = this.dataset.amount;
+        if (customAmountInput && target.dataset.amount) {
+          customAmountInput.value = target.dataset.amount;
         }
       });
     });
 
     // Clear button selection when custom amount is entered
     if (customAmountInput) {
-      customAmountInput.addEventListener('input', function() {
+      customAmountInput.addEventListener('input', () => {
         donationButtons.forEach(btn => {
           btn.classList.remove('border-primary-500', 'bg-primary-50', 'text-primary-700');
           btn.classList.add('border-gray-300');
@@ -245,7 +247,7 @@ import { Heart, Users, GraduationCap, Stethoscope, Home, Droplets } from 'lucide
     // Form submission
     const form = document.querySelector('form');
     if (form) {
-      form.addEventListener('submit', function(e) {
+      form.addEventListener('submit', (e) => {
         e.preventDefault();
         alert('Thank you for your donation! In a real application, this would process the payment.');
       });
