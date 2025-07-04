@@ -3,9 +3,59 @@ import Layout from '../../layouts/Layout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { Calendar, User, ArrowLeft, Share2, Heart, MessageCircle } from 'lucide-astro';
+
+// Define types
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  excerpt: string;
+  author: string;
+  date: string;
+  image: string;
+  category?: string;
+  featured?: boolean;
+  views?: number;
+  slug: string;
+}
+
+interface PostStorage {
+  getPostBySlug(slug: string): Post | null;
+  getPublishedPosts(): Post[];
+  getPostById(id: string): Post | null;
+  updatePost(id: string, updates: Partial<Post>): void;
+}
+
+// Extend Window interface
+declare global {
+  interface Window {
+    sharePost: (platform: string) => void;
+    copyLink: () => void;
+  }
+}
+
+// Add getStaticPaths function for dynamic routes
+export async function getStaticPaths() {
+  // Import postStorage dynamically to avoid build-time issues
+  try {
+    const { postStorage } = await import('../../utils/postStorage.js');
+    const posts = postStorage.getPublishedPosts();
+    
+    return posts.map((post: Post) => ({
+      params: { slug: post.slug },
+      props: { post }
+    }));
+  } catch (error) {
+    console.error('Error loading posts for static paths:', error);
+    return [];
+  }
+}
+
+// Get the post from props
+const { post } = Astro.props;
 ---
 
-<Layout title="Blog Post - AlaoMe" description="Read inspiring stories of transformation">
+<Layout title={post ? `${post.title} - AlaoMe` : "Blog Post - AlaoMe"} description={post ? post.excerpt : "Read inspiring stories of transformation"}>
   <Header />
   
   <!-- Blog Post Content will be loaded dynamically -->
@@ -37,28 +87,76 @@ import { Calendar, User, ArrowLeft, Share2, Heart, MessageCircle } from 'lucide-
   <Footer />
 </Layout>
 
-<script>
-  import { postStorage } from '../../utils/postStorage.js';
+<script define:vars={{ post }}>
+  // Type definitions for better TypeScript support
+  interface Post {
+    id: string;
+    title: string;
+    content: string;
+    excerpt: string;
+    author: string;
+    date: string;
+    image: string;
+    category?: string;
+    featured?: boolean;
+    views?: number;
+    slug: string;
+  }
 
-  document.addEventListener('DOMContentLoaded', function() {
+  interface PostStorage {
+    getPostBySlug(slug: string): Post | null;
+    getPublishedPosts(): Post[];
+    getPostById(id: string): Post | null;
+    updatePost(id: string, updates: Partial<Post>): void;
+  }
+
+  document.addEventListener('DOMContentLoaded', async function() {
     const blogContent = document.getElementById('blog-content');
     const loadingState = document.getElementById('loading-state');
     const errorState = document.getElementById('error-state');
     
-    // Get slug from URL
-    const pathParts = window.location.pathname.split('/');
-    const slug = pathParts[pathParts.length - 1];
-    
-    if (!slug) {
-      showError();
-      return;
+    // Check if post was passed from server-side
+    if (post) {
+      try {
+        // Import postStorage for client-side functionality
+        const { postStorage } = await import('../../utils/postStorage.js');
+        
+        // Update page title
+        document.title = `${post.title} - AlaoMe Blog`;
+        
+        // Update meta description
+        const metaDescription = document.querySelector('meta[name="description"]');
+        if (metaDescription) {
+          metaDescription.setAttribute('content', post.excerpt);
+        }
+        
+        // Render post
+        renderPost(post, postStorage);
+        
+        // Increment view count
+        incrementViews(post.id, postStorage);
+        
+      } catch (error) {
+        console.error('Error loading post:', error);
+        showError();
+      }
+    } else {
+      // Fallback: try to load from URL slug
+      const pathParts = window.location.pathname.split('/');
+      const slug = pathParts[pathParts.length - 1];
+      
+      if (!slug) {
+        showError();
+        return;
+      }
+      
+      // Load post dynamically
+      loadPost(slug);
     }
     
-    // Load post
-    loadPost(slug);
-    
-    function loadPost(slug) {
+    async function loadPost(slug) {
       try {
+        const { postStorage } = await import('../../utils/postStorage.js');
         const post = postStorage.getPostBySlug(slug);
         
         if (!post) {
@@ -76,10 +174,10 @@ import { Calendar, User, ArrowLeft, Share2, Heart, MessageCircle } from 'lucide-
         }
         
         // Render post
-        renderPost(post);
+        renderPost(post, postStorage);
         
         // Increment view count
-        incrementViews(post.id);
+        incrementViews(post.id, postStorage);
         
       } catch (error) {
         console.error('Error loading post:', error);
@@ -87,9 +185,9 @@ import { Calendar, User, ArrowLeft, Share2, Heart, MessageCircle } from 'lucide-
       }
     }
     
-    function renderPost(post) {
+    function renderPost(post, postStorage) {
       // Get related posts
-      const relatedPosts = getRelatedPosts(post);
+      const relatedPosts = getRelatedPosts(post, postStorage);
       
       const postHTML = `
         <!-- Blog Post Header -->
@@ -224,7 +322,7 @@ import { Calendar, User, ArrowLeft, Share2, Heart, MessageCircle } from 'lucide-
               <div class="mt-16 border-t pt-12">
                 <h3 class="text-2xl font-bold text-gray-900 mb-8">Related Stories</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  ${relatedPosts.map(relatedPost => `
+                  ${relatedPosts.map((relatedPost) => `
                     <a href="/blog/${relatedPost.slug}" class="group">
                       <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
                         <div class="relative overflow-hidden h-48">
@@ -261,15 +359,19 @@ import { Calendar, User, ArrowLeft, Share2, Heart, MessageCircle } from 'lucide-
         </article>
       `;
       
-      loadingState.classList.add('hidden');
-      blogContent.innerHTML = postHTML;
+      if (loadingState) {
+        loadingState.classList.add('hidden');
+      }
+      if (blogContent) {
+        blogContent.innerHTML = postHTML;
+      }
     }
     
-    function getRelatedPosts(currentPost) {
+    function getRelatedPosts(currentPost, postStorage) {
       try {
         const allPosts = postStorage.getPublishedPosts();
         return allPosts
-          .filter(post => post.id !== currentPost.id && post.category === currentPost.category)
+          .filter((post) => post.id !== currentPost.id && post.category === currentPost.category)
           .slice(0, 2);
       } catch (error) {
         console.error('Error getting related posts:', error);
@@ -277,7 +379,7 @@ import { Calendar, User, ArrowLeft, Share2, Heart, MessageCircle } from 'lucide-
       }
     }
     
-    function incrementViews(postId) {
+    function incrementViews(postId, postStorage) {
       try {
         const post = postStorage.getPostById(postId);
         if (post) {
@@ -291,8 +393,12 @@ import { Calendar, User, ArrowLeft, Share2, Heart, MessageCircle } from 'lucide-
     }
     
     function showError() {
-      loadingState.classList.add('hidden');
-      errorState.classList.remove('hidden');
+      if (loadingState) {
+        loadingState.classList.add('hidden');
+      }
+      if (errorState) {
+        errorState.classList.remove('hidden');
+      }
     }
     
     // Global functions for sharing

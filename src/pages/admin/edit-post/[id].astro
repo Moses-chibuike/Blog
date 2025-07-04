@@ -6,7 +6,7 @@ import ImageUpload from '../../../components/ImageUpload.astro';
 import RichTextEditor from '../../../components/RichTextEditor.astro';
 
 // Mock data - in a real app, this would come from a database
-const posts = {
+const posts: Record<string, Post> = {
   '1': {
     id: 1,
     title: "Empowering Communities Through Education",
@@ -30,15 +30,60 @@ const posts = {
   }
 };
 
+// Define post type
+type Post = {
+  id: number;
+  title: string;
+  author: string;
+  category: string;
+  excerpt: string;
+  content: string;
+  image: string;
+  status: string;
+  featured: boolean;
+  publishDate: string;
+  slug: string;
+  metaTitle: string;
+  metaDescription: string;
+};
+
+// Move getStaticPaths BEFORE using posts
 export function getStaticPaths() {
-  return Object.keys(posts).map(id => ({
-    params: { id }
+  // Define posts here for static generation
+  const staticPosts: Record<string, Post> = {
+    '1': {
+      id: 1,
+      title: "Empowering Communities Through Education",
+      author: "Sarah Johnson",
+      category: "Education",
+      excerpt: "Discover how our education programs are transforming lives in underserved communities, providing hope and opportunities for a brighter future.",
+      content: `<p>Education is the foundation of transformation. In our work across underserved communities, we've witnessed firsthand how access to quality education can break cycles of poverty and create pathways to brighter futures.</p>
+
+<h2>The Challenge</h2>
+<p>Many communities lack access to basic educational resources. Children walk miles to reach the nearest school, often lacking textbooks, supplies, and even qualified teachers.</p>
+
+<h2>Our Approach</h2>
+<p>We believe in sustainable, community-driven solutions. Our education programs focus on building schools, training teachers, and providing educational materials.</p>`,
+      image: "https://images.pexels.com/photos/8112198/pexels-photo-8112198.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
+      status: "published",
+      featured: true,
+      publishDate: "2024-12-15T10:00",
+      slug: "empowering-communities-education",
+      metaTitle: "Empowering Communities Through Education - AlaoMe",
+      metaDescription: "Discover how our education programs are transforming lives in underserved communities."
+    }
+  };
+
+  return Object.keys(staticPosts).map(id => ({
+    params: { id },
+    props: { post: staticPosts[id] }
   }));
 }
 
 const { id } = Astro.params;
-const post = posts[id as keyof typeof posts];
+const { post } = Astro.props as { post: Post };
 
+// Fallback check
 if (!post) {
   return Astro.redirect('/admin');
 }
